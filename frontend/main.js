@@ -2,14 +2,24 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./src/style.css";
 
-import { initLogin } from "./src/pages/login.page";
-import { initHome } from "./src/pages/home.page";
+import { renderLogin } from "./src/pages/login.page";
+import { renderHome } from "./src/pages/home.page";
 
-const page = document.body.dataset.page;
+const app = document.getElementById("app");
 
-const pageInitializers = {
-  login: initLogin,
-  home: initHome,
-};
+/* ================================
+   ROUTER SIMPLE POR URL
+================================ */
+function router() {
+  const path = window.location.pathname;
 
-pageInitializers[page]?.();
+  app.innerHTML = "";
+
+  if (path === "/home") {
+    renderHome(app);
+  } else {
+    renderLogin(app);
+  }
+}
+
+window.addEventListener("DOMContentLoaded", router);

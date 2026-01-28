@@ -3,6 +3,10 @@ const express = require("express");
 const path = require("path");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const {
+  authMiddleware,
+  generarToken,
+} = require("./middlewares/authMiddleware");
 
 const app = express();
 const PORT = process.env.PORT || 3020;
@@ -19,6 +23,7 @@ app.use(express.static(FRONTEND_DIST));
 /* ================================
    LOGIN
 ================================ */
+
 app.post("/auth/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -45,10 +50,7 @@ app.post("/auth/login", async (req, res) => {
     });
   }
 
-  const token = crypto
-    .createHmac("sha256", process.env.APP_TOKEN_SECRET)
-    .update(username)
-    .digest("hex");
+  const token = generarToken(username);
 
   return res.json({
     success: true,
@@ -61,6 +63,10 @@ app.post("/auth/login", async (req, res) => {
    SPA FALLBACK (FIX MIME)
 ================================ */
 app.get(/^\/(?!assets|auth).*/, (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIST, "index.html"));
+});
+
+app.get("/home", authMiddleware, (req, res) => {
   res.sendFile(path.join(FRONTEND_DIST, "index.html"));
 });
 

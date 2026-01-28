@@ -36,3 +36,14 @@ h5 {
   transform: translateY(-4px);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
+
+.btn-aps {
+  background-color: #212529; /* mismo que bg-dark */
+  color: #fff;
+  border: none;
+}
+
+.btn-aps:hover {
+  background-color: #343a40;
+  color: #fff;
+}
