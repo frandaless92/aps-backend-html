@@ -1,6 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 const app = express();
 const PORT = process.env.PORT || 3020;
@@ -17,7 +19,7 @@ app.use(express.static(FRONTEND_DIST));
 /* ================================
    LOGIN
 ================================ */
-app.post("/auth/login", (req, res) => {
+app.post("/auth/login", async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -27,16 +29,31 @@ app.post("/auth/login", (req, res) => {
     });
   }
 
-  if (username === process.env.APP_USER && password === process.env.APP_PASS) {
-    return res.json({
-      success: true,
-      message: "Login OK",
+  if (username !== process.env.APP_USER) {
+    return res.status(401).json({
+      success: false,
+      message: "Credenciales inválidas",
     });
   }
 
-  return res.status(401).json({
-    success: false,
-    message: "Credenciales inválidas",
+  const valid = await bcrypt.compare(password, process.env.APP_PASS_HASH);
+
+  if (!valid) {
+    return res.status(401).json({
+      success: false,
+      message: "Credenciales inválidas",
+    });
+  }
+
+  const token = crypto
+    .createHmac("sha256", process.env.APP_TOKEN_SECRET)
+    .update(username)
+    .digest("hex");
+
+  return res.json({
+    success: true,
+    message: "Login OK",
+    token,
   });
 });
 

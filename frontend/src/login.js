@@ -35,11 +35,14 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    msg.textContent = "Login correcto";
+    sessionStorage.setItem("auth_token", data.token);
+
+    msg.textContent = data.message || "Login OK";
     msg.classList.add("text-success");
 
-    // 🔜 siguiente paso: redirect
-    // window.location.href = "/home.html";
+    setTimeout(() => {
+      window.location.href = "/home.html";
+    }, 800);
   } catch (err) {
     msg.textContent = "Error de conexión con el servidor";
     msg.classList.add("text-danger");
