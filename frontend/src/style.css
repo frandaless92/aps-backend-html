@@ -6,8 +6,33 @@ body {
   background-repeat: no-repeat;
 }
 
-/* para que la card se lea bien */
+/* Fondo compartido login / home */
+.bg-home {
+  min-height: 100vh;
+  background-image: url("/backlogin.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Card consistente */
 .card {
   border-radius: 0.75rem;
-  background-color: rgba(255, 255, 255, 0.92);
+  background-color: #d0dbe9f2;
+}
+
+/* Títulos de sección */
+h5 {
+  font-weight: 600;
+}
+
+.card-action {
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card-action:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
