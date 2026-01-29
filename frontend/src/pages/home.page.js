@@ -1,10 +1,4 @@
 export function renderHome(container) {
-  const token = sessionStorage.getItem("auth_token");
-
-  if (!token) {
-    window.location.href = "/";
-    return;
-  }
   container.innerHTML = `<!-- 🔝 NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
       <div class="container-fluid">
@@ -101,8 +95,8 @@ export function renderHome(container) {
 
   const logoutBtn = document.getElementById("logoutBtn");
 
-  logoutBtn.addEventListener("click", () => {
-    sessionStorage.removeItem("auth_token");
+  logoutBtn.addEventListener("click", async () => {
+    await fetch("/auth/logout", { method: "POST" });
     window.location.href = "/";
   });
 }
