@@ -57,7 +57,7 @@ app.post("/auth/login", async (req, res) => {
     .cookie("auth_token", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false, // true si usás https
+      secure: true, // true si usás https
     })
     .json({
       success: true,
