@@ -7,12 +7,14 @@ const {
   authMiddleware,
   generarToken,
 } = require("./middlewares/authMiddleware");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 const PORT = process.env.PORT || 3020;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 /* ================================
    FRONTEND BUILD
@@ -51,22 +53,26 @@ app.post("/auth/login", async (req, res) => {
   }
 
   const token = generarToken(username);
+  return res
+    .cookie("auth_token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false, // true si usás https
+    })
+    .json({
+      success: true,
+      message: "Login OK",
+    });
+});
 
-  return res.json({
-    success: true,
-    message: "Login OK",
-    token,
-  });
+app.get("/home", authMiddleware, (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIST, "index.html"));
 });
 
 /* ================================
    SPA FALLBACK (FIX MIME)
 ================================ */
 app.get(/^\/(?!assets|auth).*/, (req, res) => {
-  res.sendFile(path.join(FRONTEND_DIST, "index.html"));
-});
-
-app.get("/home", authMiddleware, (req, res) => {
   res.sendFile(path.join(FRONTEND_DIST, "index.html"));
 });
 

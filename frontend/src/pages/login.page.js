@@ -83,9 +83,6 @@ export function renderLogin(container) {
         return;
       }
 
-      // guardar token
-      sessionStorage.setItem("auth_token", data.token);
-
       msg.textContent = data.message || "Login OK";
       msg.classList.add("text-success");
 

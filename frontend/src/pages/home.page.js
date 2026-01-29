@@ -1,4 +1,10 @@
 export function renderHome(container) {
+  const token = sessionStorage.getItem("auth_token");
+
+  if (!token) {
+    window.location.href = "/";
+    return;
+  }
   container.innerHTML = `<!-- 🔝 NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
       <div class="container-fluid">
@@ -92,13 +98,6 @@ export function renderHome(container) {
         </div>
       </div>
     </main>`;
-
-  const token = sessionStorage.getItem("auth_token");
-
-  if (!token) {
-    window.location.href = "/";
-    return;
-  }
 
   const logoutBtn = document.getElementById("logoutBtn");
 

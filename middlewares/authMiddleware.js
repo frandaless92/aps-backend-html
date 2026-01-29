@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-
 /* ================================
    GENERAR TOKEN VÁLIDO
 ================================ */
@@ -14,8 +13,8 @@ function generarToken(username) {
    AUTH MIDDLEWARE
 ================================ */
 function authMiddleware(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader?.split(" ")[1];
+  const token =
+    req.cookies?.auth_token || req.headers.authorization?.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({
