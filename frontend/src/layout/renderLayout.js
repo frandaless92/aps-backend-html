@@ -13,6 +13,6 @@ export function renderLayout(container, renderPageFn) {
   const navbarContainer = document.getElementById("navbarContainer");
   const pageContent = document.getElementById("pageContent");
 
-  renderPageFn(pageContent);
   renderNavbar(navbarContainer);
+  renderPageFn(pageContent);
 }

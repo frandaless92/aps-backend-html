@@ -11,6 +11,9 @@ import { renderGenerateBudget } from "./src/pages/presupuestos/generateBudget.pa
 import { renderManageBudgets } from "./src/pages/presupuestos/manageBudgets.page";
 import { renderManageStock } from "./src/pages/stock/manageStock.page";
 import { renderManageClients } from "./src/pages/clientes/manageClients.page";
+import Swal from "sweetalert2";
+
+window.Swal = Swal;
 
 const app = document.getElementById("app");
 

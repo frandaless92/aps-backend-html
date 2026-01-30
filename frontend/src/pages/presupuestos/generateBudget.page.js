@@ -1,5 +1,6 @@
 // src/pages/presupuestos/generateBudget.page.js
 import * as bootstrap from "bootstrap";
+import { animateFadeUp } from "../../utils/animate";
 
 export function renderGenerateBudget(container) {
   container.innerHTML = `
@@ -12,7 +13,7 @@ export function renderGenerateBudget(container) {
         <div class="col-12 col-lg-4">
 
           <!-- CLIENTE -->
-          <div class="card mb-4 shadow-sm">
+          <div class="card mb-4 shadow-sm fade-up">
             <div class="card-body">
               <small class="text-muted">Cliente</small>
               <h5 class="fw-bold mt-1" id="clienteSeleccionado">
@@ -30,27 +31,17 @@ export function renderGenerateBudget(container) {
           </div>
 
           <!-- DATOS DEL PRESUPUESTO -->
-          <div class="card shadow-sm">
+          <div class="card shadow-sm fade-up">
             <div class="card-body">
               <h6 class="fw-bold mb-3">Datos del presupuesto</h6>
 
               <!-- CONDICIÓN DE PAGO -->
               <div class="mb-3">
                 <label class="form-label fw-semibold">Condición de pago</label>
-                <div class="btn-group w-100">
-                  <button class="btn btn-outline-primary">Contado</button>
-                  <button class="btn btn-outline-primary">Débito</button>
-                  <button class="btn btn-outline-primary">Crédito</button>
-                </div>
-              </div>
-
-              <!-- REFERENCIA -->
-              <div class="mb-3">
-                <label class="form-label fw-semibold">Referencia de pago</label>
-                <div class="btn-group w-100">
-                  <button class="btn btn-outline-secondary">Efectivo</button>
-                  <button class="btn btn-outline-secondary">Transferencia</button>
-                  <button class="btn btn-outline-secondary">Tarjeta</button>
+                <div class="btn-group w-100" id="condicionPagoGroup">
+                  <button class="btn btn-outline-primary active" data-value="Contado">Contado</button>
+                  <button class="btn btn-outline-primary" data-value="Débito">Débito</button>
+                  <button class="btn btn-outline-primary" data-value="Crédito">Crédito</button>
                 </div>
               </div>
 
@@ -64,8 +55,9 @@ export function renderGenerateBudget(container) {
                 </div>
 
                 <input
+                  id="inputManoObra"
                   type="number"
-                  class="form-control"
+                  class="form-control d-none"
                   placeholder="Importe de mano de obra"
                 />
               </div>
@@ -73,19 +65,19 @@ export function renderGenerateBudget(container) {
               <!-- TRABAJO -->
               <div class="mb-3">
                 <label class="form-label fw-semibold">Trabajo</label>
-                <input class="form-control" placeholder="Nombre de quien trabajó" />
+                <input id="inputTrabajo" class="form-control" placeholder="Nombre de quien trabajó" />
               </div>
 
               <!-- VENDEDOR -->
               <div class="mb-3">
                 <label class="form-label fw-semibold">Vendedor</label>
-                <input class="form-control" placeholder="Nombre del vendedor" />
+                <input id="inputVendedor" class="form-control" placeholder="Nombre del vendedor" />
               </div>
 
               <!-- VALIDEZ -->
               <div>
                 <label class="form-label fw-semibold">Validez</label>
-                <input type="date" class="form-control" />
+                <input id="inputValidez" type="date" class="form-control" />
               </div>
             </div>
           </div>
@@ -97,7 +89,7 @@ export function renderGenerateBudget(container) {
         <div class="col-12 col-lg-8">
 
           <!-- PRODUCTOS -->
-          <div class="card shadow-sm mb-4">
+          <div class="card shadow-sm mb-4 fade-up">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="fw-bold mb-0">Productos</h6>
@@ -119,16 +111,6 @@ export function renderGenerateBudget(container) {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>Producto ejemplo</td>
-                      <td class="text-center">2</td>
-                      <td class="text-end">$1.200</td>
-                      <td class="text-end fw-bold">$2.400</td>
-                      <td class="text-end">
-                        <button class="btn btn-danger btn-sm">×</button>
-                      </td>
-                    </tr>
-                    <!-- más filas -->
                   </tbody>
                 </table>
               </div>
@@ -136,24 +118,22 @@ export function renderGenerateBudget(container) {
           </div>
 
           <!-- RESUMEN TOTAL -->
-          <div class="card shadow-sm">
+          <div class="card shadow-sm fade-up">
             <div class="card-body">
 
               <div class="d-flex justify-content-between mb-2">
                 <span>Subtotal productos</span>
-                <span>$20.400</span>
               </div>
 
               <div class="d-flex justify-content-between mb-2">
                 <span>Mano de obra</span>
-                <span>$5.000</span>
               </div>
 
               <hr />
 
               <div class="d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0">TOTAL</h5>
-                <h4 class="fw-bold text-success mb-0">$25.400</h4>
+                <h4 class="fw-bold text-success mb-0"></h4>
               </div>
 
               <button id="btnGenerarPresupuesto" class="btn btn-success w-100 mt-4">
@@ -207,17 +187,89 @@ export function renderGenerateBudget(container) {
           </div>
         </div>
       </div>
+    <div class="modal fade" id="productosModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Seleccionar producto</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- FILTROS -->
+        <div class="row g-3 mb-3">
+
+          <!-- PRECIO -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tipo de precio</label>
+            <div class="btn-group w-100" id="precioGroup">
+              <button class="btn btn-outline-primary active" data-value="contado">
+                Contado
+              </button>
+              <button class="btn btn-outline-primary" data-value="lista">
+                Lista
+              </button>
+            </div>
+          </div>
+
+          <!-- CATEGORIA -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Categoría</label>
+            <div class="btn-group w-100" id="categoriaGroup">
+              <button class="btn btn-outline-secondary active" data-value="Accesorios">
+                Accesorios
+              </button>
+              <button class="btn btn-outline-secondary" data-value="Tejidos">
+                Tejidos
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LISTA -->
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th class="text-center">Stock</th>
+                <th class="text-end">Precio</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="productosList"></tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
 
     </main>
 
   `;
 
-  // ====== ESTADO ======
-  let condicionPago = "Contado";
-  let referenciaPago = "Efectivo";
-  let incluyeManoObra = false;
-  let manoObra = 0;
-  let clienteSeleccionado = null;
+  animateFadeUp(container);
+
+  const presupuesto = {
+    cliente: null,
+    items: [],
+    total: 0,
+
+    condicionPago: "Contado",
+    referenciaPago: "",
+
+    trabajo: "",
+    vendedor: "",
+    validez: "",
+
+    incluyeManoObra: false,
+    manoObra: 0,
+  };
 
   // ====== CONDICION PAGO ======
   container.querySelectorAll(".condPago").forEach((btn) => {
@@ -231,15 +283,6 @@ export function renderGenerateBudget(container) {
     btn.addEventListener("click", () => {
       referenciaPago = btn.dataset.value;
     });
-  });
-
-  // ====== MANO DE OBRA ======
-  const chkManoObra = container.querySelector("#chkManoObra");
-  const inputManoObra = container.querySelector("#inputManoObra");
-
-  chkManoObra.addEventListener("change", () => {
-    incluyeManoObra = chkManoObra.checked;
-    inputManoObra.classList.toggle("d-none", !incluyeManoObra);
   });
 
   // ====== GENERAR PRESUPUESTO ======
@@ -264,16 +307,33 @@ export function renderGenerateBudget(container) {
     .addEventListener("click", cargarClientes);
 
   async function cargarClientes() {
+    Swal.fire({
+      title: "Cargando clientes...",
+      text: "Por favor espere",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
     try {
       const resp = await fetch("/api/clientes");
       if (!resp.ok) throw new Error("Error al cargar clientes");
 
       const clientes = await resp.json();
       renderClientes(clientes);
+
+      Swal.close();
       clientesModal.show();
     } catch (err) {
+      Swal.close();
       console.error(err);
-      alert("No se pudieron cargar los clientes");
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudieron cargar los clientes",
+      });
     }
   }
 
@@ -299,7 +359,7 @@ export function renderGenerateBudget(container) {
   }
 
   function seleccionarCliente(cliente) {
-    clienteSeleccionado = cliente;
+    presupuesto.cliente = cliente;
 
     container.querySelector("#clienteSeleccionado").textContent =
       `${cliente.apellido}, ${cliente.nombre}`;
@@ -326,5 +386,128 @@ export function renderGenerateBudget(container) {
           ? ""
           : "none";
       });
+    });
+
+  function validarCliente() {
+    if (!presupuesto.cliente) {
+      alert("Debe seleccionar un cliente");
+      return false;
+    }
+    return true;
+  }
+
+  const condBtns = container.querySelectorAll("#condicionPagoGroup button");
+
+  condBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      condBtns.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      presupuesto.condicionPago = btn.dataset.value;
+      console.log("📦 condicionPago:", presupuesto.condicionPago);
+    });
+  });
+
+  const inputTrabajo = container.querySelector("#inputTrabajo");
+
+  inputTrabajo.addEventListener("input", () => {
+    presupuesto.trabajo = inputTrabajo.value.trim();
+  });
+
+  const inputVendedor = container.querySelector("#inputVendedor");
+
+  inputVendedor.addEventListener("input", () => {
+    presupuesto.vendedor = inputVendedor.value.trim();
+  });
+
+  const inputValidez = container.querySelector("#inputValidez");
+
+  inputValidez.addEventListener("change", () => {
+    presupuesto.validez = inputValidez.value;
+    console.log("📦 validez:", presupuesto.validez);
+  });
+
+  const chkManoObra = container.querySelector("#chkManoObra");
+  const inputManoObra = container.querySelector("#inputManoObra");
+
+  chkManoObra.addEventListener("change", () => {
+    presupuesto.incluyeManoObra = chkManoObra.checked;
+    inputManoObra.classList.toggle("d-none", !chkManoObra.checked);
+
+    if (!chkManoObra.checked) {
+      presupuesto.manoObra = 0;
+      inputManoObra.value = "";
+    }
+  });
+
+  inputManoObra.addEventListener("input", () => {
+    presupuesto.manoObra = Number(inputManoObra.value) || 0;
+    console.log("📦 manoObra:", presupuesto.manoObra);
+  });
+
+  let filtroPrecio = "contado";
+  let filtroCategoria = "Accesorios";
+
+  async function cargarProductos() {
+    try {
+      const params = new URLSearchParams({
+        tipoPrecio: filtroPrecio,
+        categoria: filtroCategoria,
+      });
+
+      const resp = await fetch(`/api/productos?${params}`);
+      if (!resp.ok) throw new Error("Error cargando productos");
+
+      const productos = await resp.json();
+      renderProductos(productos);
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "No se pudieron cargar los productos", "error");
+    }
+  }
+
+  function renderProductos(productos) {
+    const tbody = container.querySelector("#productosList");
+    tbody.innerHTML = "";
+
+    productos.forEach((p) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+      <td>${p.nombre}</td>
+      <td class="text-center">${p.stock}</td>
+      <td class="text-end">$ ${p.precio.toLocaleString()}</td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-success">Agregar</button>
+      </td>
+    `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function setupToggle(groupId, callback) {
+    const buttons = container.querySelectorAll(`#${groupId} button`);
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        buttons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        callback(btn.dataset.value);
+        cargarProductos();
+      });
+    });
+  }
+
+  setupToggle("precioGroup", (val) => (filtroPrecio = val));
+  setupToggle("categoriaGroup", (val) => (filtroCategoria = val));
+
+  const productosModal = new bootstrap.Modal(
+    document.getElementById("productosModal"),
+  );
+
+  container
+    .querySelector("button.btn-primary.btn-sm")
+    .addEventListener("click", () => {
+      cargarProductos();
+      productosModal.show();
     });
 }

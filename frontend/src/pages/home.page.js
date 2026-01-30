@@ -1,8 +1,10 @@
+import { animateFadeUp } from "../utils/animate";
+
 export function renderHome(container) {
   container.innerHTML = `
     <main class="container pb-5">
 
-      <div class="mb-4 text-center text-white">
+      <div class="mb-4 text-center text-white fade-up">
         <img src="/logo-aps.png" alt="Logo APS" width="240" class="mb-3"/>
         <h2 class="fw-bold">Panel principal</h2>
         <p class="opacity-75">Seleccione una acción para comenzar</p>
@@ -11,7 +13,7 @@ export function renderHome(container) {
       <div class="row g-4">
         <!-- PRESUPUESTOS -->
         <div class="col-12 col-md-6 col-lg-4">
-          <div class="card h-100 shadow-sm card-action">
+          <div class="card h-100 shadow-sm card-action card-animate">
             <div class="card-body text-center">
               <div class="mb-3">
                 <i class="bi bi-file-earmark-text fs-1 text-dark"></i>
@@ -30,7 +32,7 @@ export function renderHome(container) {
 
         <!-- STOCK -->
         <div class="col-12 col-md-6 col-lg-4">
-          <div class="card h-100 shadow-sm card-action">
+          <div class="card h-100 shadow-sm card-action card-animate">
             <div class="card-body text-center">
               <div class="mb-3">
                 <i class="bi bi-box-seam fs-1 text-dark"></i>
@@ -44,7 +46,7 @@ export function renderHome(container) {
 
         <!-- CLIENTES -->
         <div class="col-12 col-md-6 col-lg-4">
-          <div class="card h-100 shadow-sm card-action">
+          <div class="card h-100 shadow-sm card-action card-animate">
             <div class="card-body text-center">
               <div class="mb-3">
                 <i class="bi bi-people fs-1 text-dark"></i>
@@ -57,6 +59,17 @@ export function renderHome(container) {
         </div>
       </div>
     </main>`;
+
+  animateFadeUp(container);
+
+  // ✨ Animación de entrada cards
+  const cards = container.querySelectorAll(".card-animate");
+
+  cards.forEach((card, index) => {
+    setTimeout(() => {
+      card.classList.add("show");
+    }, index * 600); // delay escalonado
+  });
 
   const generateBudgetBtn = container.querySelector("#generateBudgetBtn");
   const manageBudgetBtn = container.querySelector("#manageBudgetBtn");

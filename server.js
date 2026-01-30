@@ -6,6 +6,9 @@ const cookieParser = require("cookie-parser");
 const { authRoutes } = require("./modules/routes/authRoutes");
 const { presupuestosRoutes } = require("./modules/routes/presupuestosRoutes");
 const { clientesProxyRoutes } = require("./modules/routes/clientesProxyRoutes");
+const {
+  productosProxyRoutes,
+} = require("./modules/routes/productosProxyRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3020;
@@ -27,6 +30,11 @@ app.use(express.static(FRONTEND_DIST));
 app.use("/", authRoutes);
 app.use("/", presupuestosRoutes);
 app.use("/", clientesProxyRoutes);
+app.use("/", productosProxyRoutes);
+
+/* ================================
+   PROTECTED ROUTES
+================================ */
 
 app.get("/home", authMiddleware, (req, res) => {
   res.sendFile(path.join(FRONTEND_DIST, "index.html"));

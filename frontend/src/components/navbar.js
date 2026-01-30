@@ -20,29 +20,25 @@ export function renderNavbar(container) {
         <div class="collapse navbar-collapse" id="apsNavbar">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                Presupuestos
-              </a>
+            <li class="nav-item dropdown-custom">
+                <button
+                    id="btnPresupuestos"
+                    type="button"
+                    class="nav-link btn btn-link text-start"
+                >
+                    Presupuestos
+                </button>
 
-              <ul class="dropdown-menu shadow bg-dark">
-                <li>
-                  <a class="dropdown-item text-white" href="/presupuestos/generate-budget">
-                    Generar
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item text-white" href="/presupuestos/manage-budgets">
-                    Gestionar
-                  </a>
-                </li>
-              </ul>
+                <ul id="menuPresupuestos" class="dropdown-menu-custom">
+                    <li>
+                    <a href="/presupuestos/generate-budget">Generar</a>
+                    </li>
+                    <li>
+                    <a href="/presupuestos/manage-budgets">Gestionar</a>
+                    </li>
+                </ul>
             </li>
+
 
             <li class="nav-item">
               <a class="nav-link" href="/stock/manage-stock">Stock</a>
@@ -60,6 +56,37 @@ export function renderNavbar(container) {
       </div>
     </nav>
   `;
+
+  function initPresupuestosDropdown(container) {
+    const btn = container.querySelector("#btnPresupuestos");
+    const menu = container.querySelector("#menuPresupuestos");
+
+    if (!btn || !menu) return;
+
+    // Toggle al hacer click
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.classList.toggle("show");
+    });
+
+    // Cerrar al clickear afuera
+    document.addEventListener("click", () => {
+      menu.classList.remove("show");
+    });
+
+    // Evitar que el click dentro cierre
+    menu.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+
+    menu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        menu.classList.remove("show");
+      });
+    });
+  }
+
+  initPresupuestosDropdown(container);
 
   /* 🔐 Logout */
   const logoutBtn = container.querySelector("#logoutBtn");

@@ -4,30 +4,43 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  padding-right: 0 !important;
+}
+
+/* Evitar cursor de texto en zonas de UI */
+.navbar,
+.card,
+.card *,
+button,
+img,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+label,
+.mb-4,
+.mb-4 * {
+  user-select: none;
+  cursor: default;
+}
+
+button,
+.btn,
+a {
+  cursor: pointer;
 }
 
 .aps-bg {
-  position: relative;
-  min-height: calc(100vh - 56px); /* descuenta la navbar */
-  background-image: url("/backlogin.png");
+  height: 100%;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+    url("/backlogin.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-}
-
-/* 🌑 Manto oscuro */
-.aps-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.324); /* ajustá intensidad acá */
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* 🧱 Elevar contenido */
-.aps-bg > * {
-  position: relative;
 }
 
 .navbar {
@@ -35,22 +48,40 @@ body {
   z-index: 2000;
 }
 
-.dropdown-menu {
-  opacity: 1;
-  transform: translateY(8px);
-  cursor: pointer;
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+.dropdown-custom {
+  position: relative;
 }
 
-.dropdown-item {
-  color: white;
+.dropdown-menu-custom {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 180px;
+  background-color: #212529;
+  border-radius: 6px;
+  padding: 6px 0;
+  display: none;
+  z-index: 3000;
 }
 
-.dropdown-item:hover {
+.dropdown-menu-custom li {
+  margin: 0;
+  list-style: none;
+}
+
+.dropdown-menu-custom li a {
+  display: block;
+  padding: 8px 14px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.dropdown-menu-custom li a:hover {
   background-color: #343a40;
-  color: white;
+}
+
+.dropdown-menu-custom.show {
+  display: block;
 }
 
 /* Card consistente */
@@ -68,6 +99,23 @@ body {
 .card-action:hover {
   transform: translateY(-4px);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* =========================
+   Animaciones Home
+========================= */
+
+.card-animate {
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+}
+
+.card-animate.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 .btn-aps {
@@ -133,13 +181,31 @@ body {
   font-size: 0.85rem;
 }
 
+#clientesModal,
+#productosModal {
+  z-index: 3000;
+}
 /* Hover sutil en filas */
 .table tbody tr:hover {
   background-color: #f8f9fa;
 }
 
-#clientesModal {
-  z-index: 2100; /* encima de todo */
+/* =========================
+   Animación reusable: fade-up
+========================= */
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+  will-change: opacity, transform;
+}
+
+.fade-up.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Responsive ajuste: mobile */
