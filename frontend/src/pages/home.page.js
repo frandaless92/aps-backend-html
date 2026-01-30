@@ -1,44 +1,9 @@
 export function renderHome(container) {
-  container.innerHTML = `<!-- 🔝 NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-      <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="#">APS</a>
+  container.innerHTML = `
+    <main class="container pb-5">
 
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#apsNavbar"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="apsNavbar">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" href="#">Inicio</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Presupuestos</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Stock</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Clientes</a>
-            </li>
-          </ul>
-
-          <button id="logoutBtn" class="btn btn-outline-light btn-sm">
-            Cerrar sesión
-          </button>
-        </div>
-      </div>
-    </nav>
-
-    <!-- 🧭 CONTENIDO -->
-    <main class="container py-5">
       <div class="mb-4 text-center text-white">
+        <img src="/logo-aps.png" alt="Logo APS" width="240" class="mb-3"/>
         <h2 class="fw-bold">Panel principal</h2>
         <p class="opacity-75">Seleccione una acción para comenzar</p>
       </div>
@@ -55,10 +20,10 @@ export function renderHome(container) {
               <p class="card-text text-muted">
                 Crear y administrar presupuestos
               </p>
-              <button class="btn btn-aps w-100 mb-2">
-                Generar Presupuesto
+              <button id="generateBudgetBtn" class="btn btn-aps w-100 mb-2">
+                Generar
               </button>
-              <button class="btn btn-aps w-100">Gestionar Presupuestos</button>
+              <button id="manageBudgetBtn" class="btn btn-aps w-100">Gestionar</button>
             </div>
           </div>
         </div>
@@ -72,7 +37,7 @@ export function renderHome(container) {
               </div>
               <h5 class="card-title">Stock</h5>
               <p class="card-text text-muted">Gestión de productos</p>
-              <button class="btn btn-aps w-100">Administrar Stock</button>
+              <button id="manageStockBtn" class="btn btn-aps w-100">Administrar</button>
             </div>
           </div>
         </div>
@@ -86,17 +51,31 @@ export function renderHome(container) {
               </div>
               <h5 class="card-title">Clientes</h5>
               <p class="card-text text-muted">Alta y gestión de clientes</p>
-              <button class="btn btn-aps w-100">Ver Clientes</button>
+              <button id="manageClientsBtn" class="btn btn-aps w-100">Administrar</button>
             </div>
           </div>
         </div>
       </div>
     </main>`;
 
-  const logoutBtn = document.getElementById("logoutBtn");
+  const generateBudgetBtn = container.querySelector("#generateBudgetBtn");
+  const manageBudgetBtn = container.querySelector("#manageBudgetBtn");
+  const manageStockBtn = container.querySelector("#manageStockBtn");
+  const manageClientsBtn = container.querySelector("#manageClientsBtn");
 
-  logoutBtn.addEventListener("click", async () => {
-    await fetch("/auth/logout", { method: "POST" });
-    window.location.href = "/";
+  generateBudgetBtn.addEventListener("click", () => {
+    window.location.href = "/presupuestos/generate-budget";
+  });
+
+  manageBudgetBtn.addEventListener("click", () => {
+    window.location.href = "/presupuestos/manage-budgets";
+  });
+
+  manageStockBtn.addEventListener("click", () => {
+    window.location.href = "/stock/manage-stock";
+  });
+
+  manageClientsBtn.addEventListener("click", () => {
+    window.location.href = "/clientes/manage-clients";
   });
 }
