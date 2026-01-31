@@ -1,10 +1,8 @@
-import { animateFadeUp } from "../utils/animate";
-
 export function renderHome(container) {
   container.innerHTML = `
     <main class="container pb-5">
 
-      <div class="mb-4 text-center text-white fade-up">
+      <div class="mb-4 text-center text-white card-animate">
         <img src="/logo-aps.png" alt="Logo APS" width="240" class="mb-3"/>
         <h2 class="fw-bold">Panel principal</h2>
         <p class="opacity-75">Seleccione una acción para comenzar</p>
@@ -59,8 +57,6 @@ export function renderHome(container) {
         </div>
       </div>
     </main>`;
-
-  animateFadeUp(container);
 
   // ✨ Animación de entrada cards
   const cards = container.querySelectorAll(".card-animate");
