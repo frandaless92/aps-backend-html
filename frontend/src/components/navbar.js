@@ -24,17 +24,17 @@ export function renderNavbar(container) {
                 <button
                     id="btnPresupuestos"
                     type="button"
-                    class="nav-link btn btn-link text-start"
+                    class="nav-link btn btn-link text-start dropdown"
                 >
                     Presupuestos
                 </button>
 
                 <ul id="menuPresupuestos" class="dropdown-menu-custom">
-                    <li>
-                    <a href="/presupuestos/generate-budget">Generar</a>
+                    <li class="nav-item">
+                    <a class="nav-link" href="/presupuestos/generate-budget">Generar</a>
                     </li>
-                    <li>
-                    <a href="/presupuestos/manage-budgets">Gestionar</a>
+                    <li class="nav-item">
+                    <a class="nav-link" href="/presupuestos/manage-budgets">Gestionar</a>
                     </li>
                 </ul>
             </li>
@@ -103,7 +103,7 @@ export function renderNavbar(container) {
       link.classList.add("active");
 
       // si está dentro del dropdown, marcar el padre
-      const dropdown = link.closest(".dropdown");
+      const dropdown = link.closest(".dropdown-custom");
       if (dropdown) {
         dropdown.querySelector(".nav-link").classList.add("active");
       }

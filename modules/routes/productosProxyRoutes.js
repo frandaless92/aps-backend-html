@@ -36,6 +36,7 @@ router.get("/api/productos", authMiddleware, async (req, res) => {
       stock: p.stock,
       categoria: p.categoria,
       precio: tipoPrecio === "lista" ? p.precio_lista : p.precio,
+      precio_lista: p.precio_lista,
     }));
 
     res.json(productos);

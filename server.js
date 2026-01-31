@@ -5,6 +5,7 @@ const { authMiddleware } = require("./middlewares/authMiddleware");
 const cookieParser = require("cookie-parser");
 const { authRoutes } = require("./modules/routes/authRoutes");
 const { presupuestosRoutes } = require("./modules/routes/presupuestosRoutes");
+const { stockRoutes } = require("./modules/routes/stockRoutes");
 const { clientesProxyRoutes } = require("./modules/routes/clientesProxyRoutes");
 const {
   productosProxyRoutes,
@@ -35,6 +36,7 @@ app.use("/", presupuestosRoutes);
 app.use("/", clientesProxyRoutes);
 app.use("/", productosProxyRoutes);
 app.use("/", presupuestosProxyRoutes);
+app.use("/", stockRoutes);
 
 /* ================================
    PROTECTED ROUTES
