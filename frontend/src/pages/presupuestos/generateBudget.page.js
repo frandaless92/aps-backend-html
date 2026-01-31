@@ -248,12 +248,55 @@ export function renderGenerateBudget(container) {
     </div>
   </div>
 </div>
+    <div class="modal fade" id="cantidadModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Cantidad</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <input
+          id="inputCantidadProducto"
+          type="number"
+          step="0.01"
+          min="0.01"
+          class="form-control text-center fs-5"
+          value="1"
+        />
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button id="btnConfirmarCantidad" class="btn btn-success">
+          Agregar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
     </main>
 
   `;
 
   animateFadeUp(container);
+
+  let productoSeleccionado = null;
+
+  const cantidadModal = new bootstrap.Modal(
+    document.getElementById("cantidadModal"),
+  );
+
+  const inputCantidadProducto = container.querySelector(
+    "#inputCantidadProducto",
+  );
 
   const presupuesto = {
     cliente: null,
@@ -271,6 +314,130 @@ export function renderGenerateBudget(container) {
     manoObra: 0,
   };
 
+  function formatearFechaAR(fechaISO) {
+    if (!fechaISO) return "";
+
+    const [year, month, day] = fechaISO.split("-");
+    return `${day}/${month}/${year}`;
+  }
+
+  const tbodyPresupuesto = container.querySelector(".card table tbody");
+
+  const resumenSubtotalProductos = container.querySelector(".card-body span");
+
+  const resumenManoObra = container.querySelectorAll(".card-body span")[1];
+
+  const resumenTotal = container.querySelector(".text-success");
+
+  function validarPresupuesto() {
+    if (!presupuesto.cliente) {
+      Swal.fire("Atención", "Debe seleccionar un cliente", "warning");
+      return false;
+    }
+
+    if (!presupuesto.items.length) {
+      Swal.fire("Atención", "Debe agregar al menos un producto", "warning");
+      return false;
+    }
+
+    for (const item of presupuesto.items) {
+      if (!item.cantidad || item.cantidad <= 0) {
+        Swal.fire(
+          "Atención",
+          `Cantidad inválida para el producto "${item.nombre}"`,
+          "warning",
+        );
+        return false;
+      }
+    }
+
+    if (!presupuesto.vendedor) {
+      Swal.fire("Atención", "Debe ingresar el vendedor", "warning");
+      return false;
+    }
+
+    if (presupuesto.incluyeManoObra && presupuesto.manoObra <= 0) {
+      Swal.fire(
+        "Atención",
+        "Debe ingresar un importe válido de mano de obra",
+        "warning",
+      );
+      return false;
+    }
+
+    if (!presupuesto.total || presupuesto.total <= 0) {
+      Swal.fire("Atención", "El total del presupuesto no es válido", "warning");
+      return false;
+    }
+
+    return true;
+  }
+
+  function recalcularResumen() {
+    const subtotalProductos = presupuesto.items.reduce(
+      (acc, item) => acc + item.subtotal,
+      0,
+    );
+
+    const manoObra = presupuesto.incluyeManoObra ? presupuesto.manoObra : 0;
+
+    presupuesto.total = subtotalProductos + manoObra;
+
+    resumenSubtotalProductos.textContent = `Subtotal productos: $ ${subtotalProductos.toLocaleString()}`;
+
+    resumenManoObra.textContent = `Mano de obra: $ ${manoObra.toLocaleString()}`;
+
+    resumenTotal.textContent = `$ ${presupuesto.total.toLocaleString()}`;
+  }
+
+  function renderTablaPresupuesto() {
+    tbodyPresupuesto.innerHTML = "";
+
+    presupuesto.items.forEach((item) => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+      <td>${item.nombre}</td>
+      <td class="text-center">${item.cantidad}</td>
+      <td class="text-end">$ ${item.precio.toLocaleString()}</td>
+      <td class="text-end">$ ${item.subtotal.toLocaleString()}</td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-danger">✕</button>
+      </td>
+    `;
+
+      // 🔹 eliminar producto
+      tr.querySelector("button").addEventListener("click", () => {
+        presupuesto.items = presupuesto.items.filter((p) => p.id !== item.id);
+        renderTablaPresupuesto();
+        recalcularResumen();
+      });
+
+      tbodyPresupuesto.appendChild(tr);
+    });
+  }
+
+  function agregarProductoConCantidad(producto, cantidad) {
+    const existente = presupuesto.items.find((item) => item.id === producto.id);
+
+    if (existente) {
+      existente.cantidad += cantidad;
+      existente.subtotal = existente.cantidad * existente.precio;
+    } else {
+      presupuesto.items.push({
+        id: producto.id,
+        nombre: producto.nombre,
+        categoria: producto.categoria, // 👈 clave
+        precio: producto.precio,
+        cantidad,
+        subtotal: cantidad * producto.precio,
+      });
+    }
+
+    renderTablaPresupuesto();
+    recalcularResumen();
+  }
+
   // ====== CONDICION PAGO ======
   container.querySelectorAll(".condPago").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -284,19 +451,6 @@ export function renderGenerateBudget(container) {
       referenciaPago = btn.dataset.value;
     });
   });
-
-  // ====== GENERAR PRESUPUESTO ======
-  container
-    .querySelector("#btnGenerarPresupuesto")
-    .addEventListener("click", async () => {
-      document.getElementById("loadingOverlay").classList.remove("d-none");
-
-      // ⚠️ acá después conectamos con backend
-      setTimeout(() => {
-        document.getElementById("loadingOverlay").classList.add("d-none");
-        alert("Presupuesto generado (simulado)");
-      }, 1500);
-    });
 
   const clientesModal = new bootstrap.Modal(
     document.getElementById("clientesModal"),
@@ -442,7 +596,7 @@ export function renderGenerateBudget(container) {
 
   inputManoObra.addEventListener("input", () => {
     presupuesto.manoObra = Number(inputManoObra.value) || 0;
-    console.log("📦 manoObra:", presupuesto.manoObra);
+    recalcularResumen();
   });
 
   let filtroPrecio = "contado";
@@ -472,6 +626,7 @@ export function renderGenerateBudget(container) {
 
     productos.forEach((p) => {
       const tr = document.createElement("tr");
+
       tr.innerHTML = `
       <td>${p.nombre}</td>
       <td class="text-center">${p.stock}</td>
@@ -480,9 +635,34 @@ export function renderGenerateBudget(container) {
         <button class="btn btn-sm btn-success">Agregar</button>
       </td>
     `;
+
+      tr.querySelector("button").addEventListener("click", () => {
+        productoSeleccionado = p;
+        inputCantidadProducto.value = "1";
+        cantidadModal.show();
+      });
+
       tbody.appendChild(tr);
     });
   }
+
+  container
+    .querySelector("#btnConfirmarCantidad")
+    .addEventListener("click", () => {
+      const cant = Number(inputCantidadProducto.value.replace(",", "."));
+
+      if (isNaN(cant) || cant <= 0) {
+        Swal.fire(
+          "Cantidad inválida",
+          "Ingrese una cantidad válida",
+          "warning",
+        );
+        return;
+      }
+
+      agregarProductoConCantidad(productoSeleccionado, cant);
+      cantidadModal.hide();
+    });
 
   function setupToggle(groupId, callback) {
     const buttons = container.querySelectorAll(`#${groupId} button`);
@@ -510,4 +690,141 @@ export function renderGenerateBudget(container) {
       cargarProductos();
       productosModal.show();
     });
+
+  container
+    .querySelector("#btnGenerarPresupuesto")
+    .addEventListener("click", async () => {
+      if (!validarPresupuesto()) return;
+
+      let itemsFinales = [...presupuesto.items];
+
+      // 👉 Mano de obra como ítem de servicio
+      if (presupuesto.incluyeManoObra) {
+        const valorManoObra = Number(presupuesto.manoObra);
+
+        if (isNaN(valorManoObra) || valorManoObra <= 0) {
+          Swal.fire(
+            "Atención",
+            "El valor de mano de obra no es válido",
+            "warning",
+          );
+          return;
+        }
+
+        itemsFinales.push({
+          id: "MANO_OBRA",
+          nombre: "MANO DE OBRA",
+          categoria: "SERVICIO",
+          precio: valorManoObra,
+          cantidad: 1,
+          subtotal: valorManoObra,
+        });
+      }
+
+      const payload = {
+        cliente: presupuesto.cliente,
+        items: itemsFinales,
+        total: presupuesto.total,
+        condicionPago: presupuesto.condicionPago,
+        referenciaPago: presupuesto.referenciaPago,
+        trabajo: presupuesto.trabajo,
+        vendedor: presupuesto.vendedor,
+        validez: formatearFechaAR(presupuesto.validez),
+      };
+
+      try {
+        // ⏳ Loader
+        Swal.fire({
+          title: "Generando presupuesto...",
+          text: "Por favor espere",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        const resp = await fetch("/api/presupuestos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!resp.ok) {
+          throw new Error("Error generando el presupuesto");
+        }
+
+        const presupuestoNumero = resp.headers.get("X-Presupuesto-Numero");
+
+        const blob = await resp.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        // 📄 descarga automática
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `PRESUPUESTO-${presupuestoNumero || "PDF"}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        Swal.fire({
+          icon: "success",
+          title: "Presupuesto generado",
+          text: `Presupuesto N° ${presupuestoNumero} generado correctamente`,
+        }).then(() => {
+          resetPresupuesto();
+        });
+      } catch (err) {
+        console.error(err);
+
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo generar el presupuesto",
+        });
+      }
+    });
+
+  function resetPresupuesto() {
+    // 🧠 Estado
+    presupuesto.cliente = null;
+    presupuesto.items = [];
+    presupuesto.total = 0;
+
+    presupuesto.trabajo = "";
+    presupuesto.vendedor = "";
+    presupuesto.validez = "";
+    presupuesto.condicionPago = "Contado";
+    presupuesto.referenciaPago = "";
+
+    presupuesto.incluyeManoObra = false;
+    presupuesto.manoObra = 0;
+
+    // 🧾 UI cliente
+    container.querySelector("#clienteSeleccionado").textContent =
+      "Seleccionar cliente";
+    container.querySelector("#clienteInfo1").textContent = "";
+    container.querySelector("#clienteInfo2").textContent = "";
+
+    // 🛠️ Mano de obra
+    chkManoObra.checked = false;
+    inputManoObra.classList.add("d-none");
+    inputManoObra.value = "";
+
+    // ✏️ Inputs
+    container.querySelector("#inputTrabajo").value = "";
+    container.querySelector("#inputVendedor").value = "";
+    container.querySelector("#inputValidez").value = "";
+
+    // 💳 Condición de pago (visual)
+    condBtns.forEach((b) => b.classList.remove("active"));
+    condBtns[0].classList.add("active");
+
+    // 🧾 Tabla
+    renderTablaPresupuesto();
+
+    // 💰 Resumen
+    recalcularResumen();
+  }
 }

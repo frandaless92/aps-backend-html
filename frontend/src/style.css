@@ -21,6 +21,7 @@ h5,
 h6,
 p,
 label,
+input,
 .mb-4,
 .mb-4 * {
   user-select: none;
@@ -185,6 +186,11 @@ a {
 #productosModal {
   z-index: 3000;
 }
+
+#cantidadModal {
+  z-index: 4000;
+}
+
 /* Hover sutil en filas */
 .table tbody tr:hover {
   background-color: #f8f9fa;

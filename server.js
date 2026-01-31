@@ -9,6 +9,9 @@ const { clientesProxyRoutes } = require("./modules/routes/clientesProxyRoutes");
 const {
   productosProxyRoutes,
 } = require("./modules/routes/productosProxyRoutes");
+const {
+  presupuestosProxyRoutes,
+} = require("./modules/routes/presupuestosProxyRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3020;
@@ -31,6 +34,7 @@ app.use("/", authRoutes);
 app.use("/", presupuestosRoutes);
 app.use("/", clientesProxyRoutes);
 app.use("/", productosProxyRoutes);
+app.use("/", presupuestosProxyRoutes);
 
 /* ================================
    PROTECTED ROUTES
