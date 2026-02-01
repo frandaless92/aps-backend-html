@@ -23,19 +23,43 @@ export function renderManageStock(container) {
                 </select>
               </div>
 
-              <!-- DESCRIPCION -->
+              <!-- DESCRIPCIÓN -->
               <div class="mb-3">
                 <label class="form-label fw-semibold">Descripción</label>
                 <input id="inputDescripcion" class="form-control" />
               </div>
 
-              <!-- STOCK -->
-              <div class="mb-3">
-                <label class="form-label fw-semibold">Stock</label>
-                <input id="inputStock" type="number" class="form-control" />
+              <!-- CAMPOS TEJIDOS -->
+              <div id="tejidosFields" class="d-none">
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Calibre</label>
+                  <input id="inputCalibre" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Pulgada</label>
+                  <input id="inputPulgada" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Altura</label>
+                  <input id="inputAltura" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Longitud</label>
+                  <input id="inputLongitud" class="form-control" />
+                </div>
+
               </div>
 
-              <!-- PRECIOS -->
+              <!-- COMUNES -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Stock</label>
+                <input id="inputStock" type="number" step="0.1" class="form-control" />
+              </div>
+
               <div class="mb-3">
                 <label class="form-label fw-semibold">Precio contado</label>
                 <input id="inputPrecio" type="number" class="form-control" />
@@ -69,16 +93,20 @@ export function renderManageStock(container) {
 
               <div class="table-responsive">
                 <table class="table table-hover align-middle">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Descripción</th>
-                      <th class="text-center">Stock</th>
-                      <th class="text-end">Contado</th>
-                      <th class="text-end">Lista</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tablaStock"></tbody>
+                  <thead class="table-light" id="tablaHead"></thead>
+                  <tbody id="tablaBody"></tbody>
                 </table>
+                  <div class="d-flex justify-content-between align-items-center mt-3">
+                    <button id="btnPrev" class="btn btn-outline-secondary btn-sm">
+                      ◀ Anterior
+                    </button>
+
+                    <span id="pageInfo" class="small fw-semibold"></span>
+
+                    <button id="btnNext" class="btn btn-outline-secondary btn-sm">
+                      Siguiente ▶
+                    </button>
+                  </div>
               </div>
 
             </div>
@@ -95,13 +123,23 @@ export function renderManageStock(container) {
   // 🧠 ESTADO
   // =============================
   let productos = [];
-  let productoSeleccionado = null;
+  let seleccionado = null;
+  let filaSeleccionada = null;
+  const PAGE_SIZE = 13;
+  let paginaActual = 1;
 
   // =============================
   // 📌 DOM
   // =============================
-  const tipoProducto = container.querySelector("#tipoProducto");
+  const tipo = container.querySelector("#tipoProducto");
+  const tejidosFields = container.querySelector("#tejidosFields");
+
   const descripcion = container.querySelector("#inputDescripcion");
+  const calibre = container.querySelector("#inputCalibre");
+  const pulgada = container.querySelector("#inputPulgada");
+  const altura = container.querySelector("#inputAltura");
+  const longitud = container.querySelector("#inputLongitud");
+
   const stock = container.querySelector("#inputStock");
   const precio = container.querySelector("#inputPrecio");
   const precioLista = container.querySelector("#inputPrecioLista");
@@ -111,148 +149,329 @@ export function renderManageStock(container) {
   const btnEliminar = container.querySelector("#btnEliminar");
   const btnLimpiar = container.querySelector("#btnLimpiar");
 
-  const tabla = container.querySelector("#tablaStock");
+  const tablaHead = container.querySelector("#tablaHead");
+  const tablaBody = container.querySelector("#tablaBody");
+  const btnPrev = container.querySelector("#btnPrev");
+  const btnNext = container.querySelector("#btnNext");
+  const pageInfo = container.querySelector("#pageInfo");
 
   // =============================
-  // 🔄 CARGAR PRODUCTOS
+  // 🔄 CARGAR
   // =============================
-  async function cargarProductos() {
+  async function cargar() {
+    Swal.fire({
+      title: "Cargando inventario",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
     try {
-      const resp = await fetch(
-        `/api/productos?categoria=${tipoProducto.value}`,
-      );
+      const resp = await fetch(`/api/productos?categoria=${tipo.value}`);
       productos = await resp.json();
+      paginaActual = 1; // 👈 reset
       renderTabla();
-    } catch {
-      Swal.fire("Error", "No se pudo cargar el stock", "error");
+    } finally {
+      Swal.close();
     }
   }
 
   // =============================
-  // 🧾 RENDER TABLA
+  // 🧾 TABLA
   // =============================
   function renderTabla() {
-    tabla.innerHTML = "";
+    const totalPaginas = Math.ceil(productos.length / PAGE_SIZE);
 
-    productos.forEach((p) => {
+    // clamp por seguridad
+    if (paginaActual > totalPaginas) paginaActual = totalPaginas || 1;
+    if (paginaActual < 1) paginaActual = 1;
+
+    const inicio = (paginaActual - 1) * PAGE_SIZE;
+    const fin = inicio + PAGE_SIZE;
+
+    const paginaProductos = productos.slice(inicio, fin);
+
+    // HEAD
+    tablaHead.innerHTML =
+      tipo.value === "TEJIDOS"
+        ? `
+        <tr>
+          <th>Descripción</th><th>Cal</th><th>Pulg</th>
+          <th>Alt</th><th>Long</th>
+          <th class="text-center">Stock</th>
+          <th class="text-end">Contado</th>
+          <th class="text-end">Lista</th>
+        </tr>`
+        : `
+        <tr>
+          <th>Descripción</th>
+          <th class="text-center">Stock</th>
+          <th class="text-end">Contado</th>
+          <th class="text-end">Lista</th>
+        </tr>`;
+
+    tablaBody.innerHTML = "";
+
+    paginaProductos.forEach((p) => {
       const tr = document.createElement("tr");
 
-      tr.innerHTML = `
-        <td>${p.nombre}</td>
-        <td class="text-center">${p.stock}</td>
-        <td class="text-end">$ ${p.precio}</td>
-        <td class="text-end">$ ${p.precio_lista}</td>
-      `;
+      // 🔴 stock cero
+      if (Number(p.stock) === 0) {
+        tr.classList.add("table-danger");
+        tr.dataset.sinStock = "1";
+      }
 
-      tr.addEventListener("click", () => seleccionarProducto(p));
-      tabla.appendChild(tr);
+      tr.innerHTML =
+        tipo.value === "TEJIDOS"
+          ? `
+          <td>${p.descripcion}</td>
+          <td>${p.cal}</td>
+          <td>${p.pul}</td>
+          <td>${p.alt}</td>
+          <td>${p.long}</td>
+          <td class="text-center">${p.stock}</td>
+          <td class="text-end">$ ${p.precio}</td>
+          <td class="text-end">$ ${p.precio_lista}</td>`
+          : `
+          <td>${p.nombre}</td>
+          <td class="text-center">${p.stock}</td>
+          <td class="text-end">$ ${p.precio}</td>
+          <td class="text-end">$ ${p.precio_lista}</td>`;
+
+      tr.addEventListener("click", () => seleccionar(p, tr));
+      tablaBody.appendChild(tr);
     });
+
+    // 📄 info y botones
+    pageInfo.textContent = `Página ${paginaActual} de ${totalPaginas || 1}`;
+
+    btnPrev.disabled = paginaActual === 1;
+    btnNext.disabled = paginaActual === totalPaginas || totalPaginas === 0;
   }
 
   // =============================
   // ✏️ SELECCIONAR
   // =============================
-  function seleccionarProducto(p) {
-    productoSeleccionado = p;
+  function seleccionar(p, tr) {
+    seleccionado = p;
 
-    descripcion.value = p.nombre;
+    // limpiar selección anterior
+    if (filaSeleccionada) {
+      filaSeleccionada.classList.remove("table-primary");
+
+      // 🔴 restaurar danger si correspondía
+      if (filaSeleccionada.dataset.sinStock === "1") {
+        filaSeleccionada.classList.add("table-danger");
+      }
+    }
+
+    filaSeleccionada = tr;
+
+    // 🎯 quitar danger y resaltar
+    tr.classList.remove("table-danger");
+    tr.classList.add("table-primary");
+
     stock.value = p.stock;
     precio.value = p.precio;
     precioLista.value = p.precio_lista;
 
+    if (tipo.value === "TEJIDOS") {
+      descripcion.value = p.descripcion;
+      calibre.value = p.cal;
+      pulgada.value = p.pul;
+      altura.value = p.alt;
+      longitud.value = p.long;
+    } else {
+      descripcion.value = p.nombre;
+    }
+
+    btnAgregar.disabled = true;
     btnModificar.disabled = false;
     btnEliminar.disabled = false;
-    btnAgregar.disabled = true;
   }
-
-  // =============================
-  // ➕ AGREGAR
-  // =============================
-  btnAgregar.addEventListener("click", async () => {
-    await fetch("/api/stock", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tipo: tipoProducto.value,
-        descripcion: descripcion.value,
-        stock: Number(stock.value),
-        precio: Number(precio.value),
-        precio_lista: Number(precioLista.value),
-      }),
-    });
-
-    limpiar();
-    cargarProductos();
-  });
-
-  // =============================
-  // ✏️ MODIFICAR
-  // =============================
-  btnModificar.addEventListener("click", async () => {
-    if (!productoSeleccionado) return;
-
-    await fetch(`/api/stock/${productoSeleccionado.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        descripcion: descripcion.value,
-        stock: Number(stock.value),
-        precio: Number(precio.value),
-        precio_lista: Number(precioLista.value),
-      }),
-    });
-
-    limpiar();
-    cargarProductos();
-  });
-
-  // =============================
-  // ❌ ELIMINAR
-  // =============================
-  btnEliminar.addEventListener("click", async () => {
-    if (!productoSeleccionado) return;
-
-    const r = await Swal.fire({
-      title: "Eliminar producto",
-      text: "¿Confirma eliminar este producto?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Eliminar",
-    });
-
-    if (!r.isConfirmed) return;
-
-    await fetch(`/api/stock/${productoSeleccionado.id}`, {
-      method: "DELETE",
-    });
-
-    limpiar();
-    cargarProductos();
-  });
 
   // =============================
   // 🧹 LIMPIAR
   // =============================
   function limpiar() {
-    productoSeleccionado = null;
+    seleccionado = null;
+
+    if (filaSeleccionada) {
+      filaSeleccionada.classList.remove("table-primary");
+
+      if (filaSeleccionada.dataset.sinStock === "1") {
+        filaSeleccionada.classList.add("table-danger");
+      }
+
+      filaSeleccionada = null;
+    }
 
     descripcion.value = "";
     stock.value = "";
     precio.value = "";
     precioLista.value = "";
+    calibre.value = pulgada.value = altura.value = longitud.value = "";
 
     btnAgregar.disabled = false;
     btnModificar.disabled = true;
     btnEliminar.disabled = true;
   }
 
-  btnLimpiar.addEventListener("click", limpiar);
+  // =============================
+  // ➕ AGREGAR / ✏️ MODIFICAR / ❌ ELIMINAR
+  // =============================
+  async function enviar(method) {
+    if (!descripcion.value.trim()) {
+      return Swal.fire("Atención", "La descripción es obligatoria", "warning");
+    }
 
-  tipoProducto.addEventListener("change", () => {
+    if (stock.value === "" || isNaN(Number(stock.value))) {
+      return Swal.fire("Atención", "Stock inválido", "warning");
+    }
+
+    if (precio.value === "" || isNaN(Number(precio.value))) {
+      return Swal.fire("Atención", "Precio contado inválido", "warning");
+    }
+
+    if (precioLista.value === "" || isNaN(Number(precioLista.value))) {
+      return Swal.fire("Atención", "Precio lista inválido", "warning");
+    }
+
+    if (tipo.value === "TEJIDOS") {
+      if (
+        !calibre.value ||
+        !pulgada.value ||
+        !altura.value ||
+        !longitud.value
+      ) {
+        return Swal.fire(
+          "Atención",
+          "Complete todos los campos del tejido",
+          "warning",
+        );
+      }
+    }
+
+    const payload = {
+      tipo: tipo.value,
+      descripcion: descripcion.value,
+      stock: Number(stock.value),
+      precio: Number(precio.value),
+      precio_lista: Number(precioLista.value),
+    };
+
+    if (tipo.value === "TEJIDOS") {
+      Object.assign(payload, {
+        calibre: calibre.value,
+        pulgada: pulgada.value,
+        altura: altura.value,
+        longitud: longitud.value,
+      });
+    }
+
+    const url =
+      method === "POST"
+        ? "/api/productos"
+        : `/api/productos/${seleccionado.id}`;
+
+    Swal.fire({
+      title: method === "POST" ? "Agregando producto" : "Actualizando producto",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    try {
+      const resp = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!resp.ok) throw new Error("Error backend");
+
+      await Swal.fire({
+        icon: "success",
+        title:
+          method === "POST"
+            ? "Producto creado correctamente"
+            : "Producto actualizado correctamente",
+        timer: 1400,
+        showConfirmButton: false,
+      });
+
+      limpiar();
+      await cargar();
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "No se pudo guardar el producto", "error");
+    }
+  }
+
+  btnAgregar.onclick = () => enviar("POST");
+  btnModificar.onclick = () => enviar("PUT");
+
+  btnEliminar.onclick = async () => {
+    if (!seleccionado) return;
+
+    const r = await Swal.fire({
+      title: "Eliminar producto",
+      text: "Esta acción no se puede deshacer",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (!r.isConfirmed) return;
+
+    Swal.fire({
+      title: "Eliminando producto",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    try {
+      const resp = await fetch(
+        `/api/productos/${seleccionado.id}?tipo=${tipo.value}`,
+        { method: "DELETE" },
+      );
+
+      if (!resp.ok) throw new Error("Error backend");
+
+      await Swal.fire({
+        icon: "success",
+        title: "Producto eliminado correctamente",
+        timer: 1400,
+        showConfirmButton: false,
+      });
+
+      limpiar();
+      await cargar();
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "No se pudo eliminar el producto", "error");
+    }
+  };
+
+  btnPrev.onclick = () => {
+    paginaActual--;
     limpiar();
-    cargarProductos();
-  });
+    renderTabla();
+  };
+
+  btnNext.onclick = () => {
+    paginaActual++;
+    limpiar();
+    renderTabla();
+  };
+
+  btnLimpiar.onclick = limpiar;
+
+  tipo.onchange = () => {
+    tejidosFields.classList.toggle("d-none", tipo.value !== "TEJIDOS");
+    limpiar();
+    cargar();
+  };
 
   // 🚀 INIT
-  cargarProductos();
+  cargar();
 }
