@@ -261,10 +261,9 @@ export function renderGenerateBudget(container) {
         <input
           id="inputCantidadProducto"
           type="number"
-          step="0.01"
-          min="0.01"
+          step="0.1"
+          min="0.1"
           class="form-control text-center fs-5"
-          value="1"
         />
       </div>
 
@@ -399,7 +398,9 @@ export function renderGenerateBudget(container) {
       tr.innerHTML = `
       <td>${item.nombre}</td>
       <td class="text-center">${item.cantidad}</td>
-      <td class="text-end">$ ${item.precio.toLocaleString()}</td>
+      <td class="text-end">
+        $ ${Number(item.precio || 0).toLocaleString("es-AR")}
+      </td>
       <td class="text-end">$ ${item.subtotal.toLocaleString()}</td>
       <td class="text-end">
         <button class="btn btn-sm btn-danger">✕</button>
@@ -630,7 +631,7 @@ export function renderGenerateBudget(container) {
       tr.innerHTML = `
       <td>${p.nombre}</td>
       <td class="text-center">${p.stock}</td>
-      <td class="text-end">$ ${p.precio.toLocaleString()}</td>
+      <td class="text-end">$ ${Number(p.precio || 0).toLocaleString("es-AR")}</td>
       <td class="text-end">
         <button class="btn btn-sm btn-success">Agregar</button>
       </td>
@@ -638,7 +639,7 @@ export function renderGenerateBudget(container) {
 
       tr.querySelector("button").addEventListener("click", () => {
         productoSeleccionado = p;
-        inputCantidadProducto.value = "1";
+        inputCantidadProducto.value = "";
         cantidadModal.show();
       });
 

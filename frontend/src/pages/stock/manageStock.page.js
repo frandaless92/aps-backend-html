@@ -62,12 +62,12 @@ export function renderManageStock(container) {
 
               <div class="mb-3">
                 <label class="form-label fw-semibold">Precio contado</label>
-                <input id="inputPrecio" type="number" class="form-control" />
+                <input id="inputPrecio" type="text" inputmode="decimal" class="form-control" />
               </div>
 
               <div class="mb-4">
                 <label class="form-label fw-semibold">Precio lista</label>
-                <input id="inputPrecioLista" type="number" class="form-control" />
+                <input id="inputPrecioLista" type="text" inputmode="decimal" class="form-control" />
               </div>
 
               <!-- BOTONES -->
@@ -155,6 +155,11 @@ export function renderManageStock(container) {
   const btnNext = container.querySelector("#btnNext");
   const pageInfo = container.querySelector("#pageInfo");
 
+  function parseDecimal(value) {
+    if (typeof value !== "string") return Number(value);
+    return Number(value.replace(",", "."));
+  }
+
   // =============================
   // 🔄 CARGAR
   // =============================
@@ -229,13 +234,13 @@ export function renderManageStock(container) {
           <td>${p.alt}</td>
           <td>${p.long}</td>
           <td class="text-center">${p.stock}</td>
-          <td class="text-end">$ ${p.precio}</td>
-          <td class="text-end">$ ${p.precio_lista}</td>`
+          <td class="text-end">$ ${new Intl.NumberFormat("es-AR").format(p.precio)}</td>
+          <td class="text-end">$ ${new Intl.NumberFormat("es-AR").format(p.precio_lista)}</td>`
           : `
           <td>${p.nombre}</td>
           <td class="text-center">${p.stock}</td>
-          <td class="text-end">$ ${p.precio}</td>
-          <td class="text-end">$ ${p.precio_lista}</td>`;
+          <td class="text-end">$ ${new Intl.NumberFormat("es-AR").format(p.precio)}</td>
+          <td class="text-end">$ ${new Intl.NumberFormat("es-AR").format(p.precio_lista)}</td>`;
 
       tr.addEventListener("click", () => seleccionar(p, tr));
       tablaBody.appendChild(tr);
@@ -355,8 +360,8 @@ export function renderManageStock(container) {
       tipo: tipo.value,
       descripcion: descripcion.value,
       stock: Number(stock.value),
-      precio: Number(precio.value),
-      precio_lista: Number(precioLista.value),
+      precio: parseDecimal(precio.value),
+      precio_lista: parseDecimal(precioLista.value),
     };
 
     if (tipo.value === "TEJIDOS") {

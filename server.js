@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const { authRoutes } = require("./modules/routes/authRoutes");
 const { presupuestosRoutes } = require("./modules/routes/presupuestosRoutes");
 const { stockRoutes } = require("./modules/routes/stockRoutes");
+const { clientesRoutes } = require("./modules/routes/clientesRoutes");
 const { clientesProxyRoutes } = require("./modules/routes/clientesProxyRoutes");
 const {
   productosProxyRoutes,
@@ -33,6 +34,7 @@ app.use(express.static(FRONTEND_DIST));
 ================================ */
 app.use("/", authRoutes);
 app.use("/", presupuestosRoutes);
+app.use("/", clientesRoutes);
 app.use("/", clientesProxyRoutes);
 app.use("/", productosProxyRoutes);
 app.use("/", presupuestosProxyRoutes);
